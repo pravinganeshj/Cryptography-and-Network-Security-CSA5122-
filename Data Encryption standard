@@ -1,12 +1,11 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 
-// Simple XOR-based Feistel function
 uint32_t feistel(uint32_t half, uint32_t subkey) {
     return half ^ subkey;
 }
 
-// Encrypt/Decrypt with 16 rounds
 uint64_t des_rounds(uint64_t data, uint32_t key, int decrypt) {
     uint32_t L = data >> 32;
     uint32_t R = data & 0xFFFFFFFF;
@@ -21,27 +20,45 @@ uint64_t des_rounds(uint64_t data, uint32_t key, int decrypt) {
     return ((uint64_t)R << 32) | L;
 }
 
+uint64_t string_to_uint64(const char *str) {
+    uint64_t val = 0;
+    for (int i = 0; i < 8; i++) {
+        val <<= 8;
+        val |= (i < strlen(str)) ? (unsigned char)str[i] : 0;
+    }
+    return val;
+}
+
+void uint64_to_string(uint64_t val, char *str) {
+    for (int i = 7; i >= 0; i--) {
+        str[i] = val & 0xFF;
+        val >>= 8;
+    }
+    str[8] = '\0';
+}
+
 int main() {
+    char input[100], key_input[100];
+    char decrypted_str[9];
     uint64_t plaintext;
     uint32_t key;
 
-    printf("Enter 16-digit hex plaintext (e.g. 123456789ABCDEF0): ");
-    if (scanf("%llx", &plaintext) != 1) {
-        printf("Invalid input for plaintext.\n");
-        return 1;
-    }
+    printf("Enter a string (max 8 characters): ");
+    scanf("%8s", input); 
 
-    printf("Enter 8-digit hex key (e.g. 0F1571C8): ");
-    if (scanf("%x", &key) != 1) {
-        printf("Invalid input for key.\n");
-        return 1;
-    }
+    printf("Enter an 8-digit hex key (e.g. 0F1571C8): ");
+    scanf("%8s", key_input);
+    sscanf(key_input, "%x", &key); 
+
+    plaintext = string_to_uint64(input);
 
     uint64_t encrypted = des_rounds(plaintext, key, 0);
     uint64_t decrypted = des_rounds(encrypted, key, 1);
 
-    printf("\nEncrypted : 0x%016llX\n", encrypted);
-    printf("Decrypted : 0x%016llX\n", decrypted);
+    uint64_to_string(decrypted, decrypted_str);
+
+    printf("\nEncrypted (hex): 0x%016llX\n", encrypted);
+    printf("Decrypted (text): %s\n", decrypted_str);
 
     return 0;
 }
