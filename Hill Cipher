@@ -1,0 +1,63 @@
+#include <stdio.h>
+#include <string.h>
+
+int mod(int x) {
+    return (x % 26 + 26) % 26;
+}
+
+int inv(int d) {
+    for (int i = 1; i < 26; i++)
+        if ((d * i) % 26 == 1)
+            return i;
+    return -1; 
+}
+
+void hill(char *t, int k[2][2], int decrypt) {
+    int a = k[0][0], b = k[0][1], c = k[1][0], d = k[1][1];
+
+    if (decrypt) {
+        int det = mod(a * d - b * c);
+        int id = inv(det);
+        if (id == -1) {
+            printf("Key not invertible\n");
+            return;
+        }
+
+        int newA = mod(d * id);
+        int newB = mod(-b * id);
+        int newC = mod(-c * id);
+        int newD = mod(a * id);
+        a = newA; b = newB; c = newC; d = newD;
+    }
+
+    for (int i = 0; i < strlen(t); i += 2) {
+        int x = t[i] - 'A';
+        int y = t[i + 1] - 'A';
+        t[i]     = mod(a * x + b * y) + 'A';
+        t[i + 1] = mod(c * x + d * y) + 'A';
+    }
+}
+
+int main() {
+    char t[100];
+    int k[2][2], ch;
+
+    printf("Enter 2x2 key (4 integers): ");
+    scanf("%d%d%d%d", &k[0][0], &k[0][1], &k[1][0], &k[1][1]);
+
+    printf("Enter UPPERCASE text (even length): ");
+    scanf("%s", t);
+
+    if (strlen(t) % 2 != 0) {
+        printf("Text length must be even.\n");
+        return 1;
+    }
+
+    printf("1. Encrypt  2. Decrypt: ");
+    scanf("%d", &ch);
+
+    hill(t, k, ch == 2);
+    printf("Result: %s\n", t);
+
+    return 0;
+}
