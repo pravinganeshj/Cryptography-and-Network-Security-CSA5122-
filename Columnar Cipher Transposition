@@ -1,0 +1,49 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+void getOrder(char *key, int ord[]) {
+    int len = strlen(key);
+    for (int i = 0; i < len; i++) {
+        ord[i] = 0;
+        for (int j = 0; j < len; j++)
+            if (toupper(key[j]) < toupper(key[i]) || (toupper(key[j]) == toupper(key[i]) && j < i))
+                ord[i]++;
+    }
+}
+
+void cipher(char *in, char *key, char *out, int decrypt) {
+    int len = strlen(in), klen = strlen(key), rows = (len + klen - 1) / klen, idx = 0;
+    char mat[rows][klen]; int ord[20];
+    getOrder(key, ord);
+
+    if (!decrypt) { // encryption
+        for (int i = 0; i < rows * klen; i++)
+            mat[i / klen][i % klen] = i < len ? in[i] : 'X';
+        for (int c = 0; c < klen; c++)
+            for (int j = 0; j < klen; j++)
+                if (ord[j] == c)
+                    for (int i = 0; i < rows; i++)
+                        out[idx++] = mat[i][j];
+    } else { // decryption
+        for (int c = 0; c < klen; c++)
+            for (int j = 0; j < klen; j++)
+                if (ord[j] == c)
+                    for (int i = 0; i < rows; i++)
+                        mat[i][j] = in[idx++];
+        for (int i = 0; i < rows; i++)
+            for (int j = 0; j < klen; j++)
+                out[i * klen + j] = mat[i][j];
+    }
+    out[rows * klen] = '\0';
+}
+
+int main() {
+    char key[20], text[100], result[100]; int ch;
+    printf("Key: "); scanf("%s", key); getchar();
+    printf("Text: "); fgets(text, 100, stdin); text[strcspn(text, "\n")] = 0;
+    printf("1.Encrypt 2.Decrypt: "); scanf("%d", &ch);
+    cipher(text, key, result, ch == 2);
+    printf("Result: %s\n", result);
+    return 0;
+}
