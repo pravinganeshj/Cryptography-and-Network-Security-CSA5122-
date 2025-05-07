@@ -1,0 +1,56 @@
+#include <stdio.h>
+#include <string.h>
+
+int modInv(int a) {
+    for (int i = 1; i < 26; i++)
+        if ((a * i) % 26 == 1) return i;
+    return -1;
+}
+
+void encrypt(char *in, char *out, int a, int b) {
+    for (int i = 0; in[i]; i++)
+        out[i] = ((a * (in[i] - 'a') + b) % 26) + 'a';
+    out[strlen(in)] = '\0';
+}
+
+void decrypt(char *in, char *out, int a, int b) {
+    int ai = modInv(a);
+    for (int i = 0; in[i]; i++)
+        out[i] = (ai * ((in[i] - 'a' - b + 26) % 26)) % 26 + 'a';
+    out[strlen(in)] = '\0';
+}
+
+int main() {
+    char text[100], result[100];
+    int a, b, choice;
+
+    printf("Choose an option:\n1. Encrypt\n2. Decrypt\nEnter choice: ");
+    scanf("%d", &choice);
+
+    printf("Enter lowercase text: ");
+    scanf("%s", text);
+
+    printf("Enter key 'a' (must be coprime with 26): ");
+    scanf("%d", &a);
+
+    printf("Enter key 'b': ");
+    scanf("%d", &b);
+
+    if (modInv(a) == -1) {
+        printf("Invalid 'a'. No modular inverse exists.\n");
+        return 1;
+    }
+
+    if (choice == 1) {
+        encrypt(text, result, a, b);
+        printf("Encrypted text: %s\n", result);
+    } else if (choice == 2) {
+        decrypt(text, result, a, b);
+        printf("Decrypted text: %s\n", result);
+    } else {
+        printf("Invalid choice.\n");
+    }
+
+    return 0;
+}
+	
