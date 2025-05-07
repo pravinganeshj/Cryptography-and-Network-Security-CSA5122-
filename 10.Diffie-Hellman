@@ -1,0 +1,35 @@
+def mod_exp(base, exp, mod):
+    result = 1
+    while exp > 0:
+        if exp % 2 == 1:
+            result = (result * base) % mod
+        base = (base * base) % mod
+        exp //= 2
+    return result
+
+# Get user inputs
+p = int(input("Enter a prime number (p): "))
+g = int(input("Enter a primitive root modulo p (g): "))
+
+# User A inputs private key
+private_A = int(input("Enter private key for User A: "))
+public_A = mod_exp(g, private_A, p)
+
+# User B inputs private key
+private_B = int(input("Enter private key for User B: "))
+public_B = mod_exp(g, private_B, p)
+
+# Compute shared secret
+secret_A = mod_exp(public_B, private_A, p)
+secret_B = mod_exp(public_A, private_B, p)
+
+print(f"\nPublic Key A: {public_A}")
+print(f"Public Key B: {public_B}")
+print(f"Shared Secret A: {secret_A}")
+print(f"Shared Secret B: {secret_B}")
+
+assert secret_A == secret_B, "Error: Shared secrets do not match!"
+shared_secret = secret_A  
+
+
+
