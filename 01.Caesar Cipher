@@ -1,0 +1,22 @@
+#include <stdio.h>
+
+int main() {
+    char text[100];
+    int key;
+
+    printf("Enter lowercase text: ");
+    scanf("%s", text);
+
+    printf("Enter key (0-25): ");
+    scanf("%d", &key);
+
+    for (int i = 0; text[i] != '\0'; i++) {
+        // Encrypt only lowercase letters
+        if (text[i] >= 'a' && text[i] <= 'z') {
+            text[i] = ((text[i] - 'a' + key) % 26) + 'a';
+        }
+    }
+
+    printf("Encrypted text: %s\n", text);
+    return 0;
+}
