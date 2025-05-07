@@ -1,0 +1,45 @@
+# Elliptic curve: y² = x³ + ax + b mod p
+a, b, p = 2, 3, 97
+G = (3, 6)
+
+def modinv(x, p):
+    return pow(x, -1, p)
+
+def point_add(P, Q):
+    if not P: return Q
+    if not Q: return P
+    x1, y1 = P
+    x2, y2 = Q
+    if x1 == x2 and y1 != y2: return None
+    m = ((3 * x1 * x1 + a) * modinv(2 * y1, p)) if P == Q else ((y2 - y1) * modinv(x2 - x1, p))
+    m %= p
+    x3 = (m * m - x1 - x2) % p
+    y3 = (m * (x1 - x3) - y1) % p
+    return (x3, y3)
+
+def scalar_mul(k, P):
+    R = None
+    while k:
+        if k & 1: R = point_add(R, P)
+        P = point_add(P, P)
+        k >>= 1
+    return R
+
+# === User Input ===
+a_priv = int(input("Enter Alice's private key (1-96): "))
+b_priv = int(input("Enter Bob's private key (1-96): "))
+
+# Public keys
+a_pub = scalar_mul(a_priv, G)
+b_pub = scalar_mul(b_priv, G)
+
+# Shared secret
+shared_a = scalar_mul(a_priv, b_pub)
+shared_b = scalar_mul(b_priv, a_pub)
+
+print("\n--- Key Exchange Results ---")
+print("Alice's Public Key:", a_pub)
+print("Bob's Public Key:  ", b_pub)
+print("Shared Secret (Alice):", shared_a)
+print("Shared Secret (Bob):  ", shared_b)
+print("Match:", shared_a == shared_b)
