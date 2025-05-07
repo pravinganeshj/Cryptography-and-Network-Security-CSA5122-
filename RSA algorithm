@@ -1,0 +1,50 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+// Function to calculate modular exponentiation
+long long mod_exp(long long base, long long exp, long long mod) {
+    long long result = 1;
+    while (exp > 0) {
+        if (exp % 2 == 1) result = (result * base) % mod;
+        base = (base * base) % mod;
+        exp /= 2;
+    }
+    return result;
+}
+
+int main() {
+    long long n, e, d;
+    
+    // Get keys from user
+    printf("Enter modulus (n): ");
+    scanf("%lld", &n);
+    printf("Enter public exponent (e): ");
+    scanf("%lld", &e);
+    printf("Enter private exponent (d): ");
+    scanf("%lld", &d);
+
+    int choice;
+    printf("Enter 1 to Encrypt or 2 to Decrypt: ");
+    scanf("%d", &choice);
+
+    if (choice == 1) {
+        long long msg;
+        printf("Enter the message to encrypt: ");
+        scanf("%lld", &msg);
+        long long encrypted = mod_exp(msg, e, n);
+        printf("Encrypted Message: %lld\n", encrypted);
+    } else if (choice == 2) {
+        long long encrypted;
+        printf("Enter the encrypted message to decrypt: ");
+        scanf("%lld", &encrypted);
+        long long decrypted = mod_exp(encrypted, d, n);
+        printf("Decrypted Message: %lld\n", decrypted);
+    } else {
+        printf("Invalid choice.\n");
+    }
+
+    return 0;
+}
+
+
