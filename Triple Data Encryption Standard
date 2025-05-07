@@ -1,0 +1,64 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdint.h>
+
+// Fixed 64-bit key (8 bytes, 64 bits)
+static const uint64_t key = 0x133457799BBCDFF1;
+
+// XOR-based encryption function (simplified)
+void xor_encrypt(uint64_t *data, uint64_t key) {
+    *data ^= key;  // XOR the data with the key
+}
+
+// Function to print data in hexadecimal format
+void print_hex(uint64_t data) {
+    for (int i = 7; i >= 0; i--) {
+        printf("%02X", (data >> (i * 8)) & 0xFF);
+    }
+    printf("\n");
+}
+
+int main() {
+    uint64_t input_data;
+    uint64_t encrypted_data;
+    int choice;
+
+    // Prompt for 8-character input text
+    printf("Enter 8-character text: ");
+    char input[9];
+    fgets(input, sizeof(input), stdin);
+    input[8] = '\0';  // Ensure null-termination
+
+    // Convert input text to uint64_t for encryption (8 bytes = 64 bits)
+    input_data = 0;
+    for (int i = 0; i < 8; i++) {
+        input_data = (input_data << 8) | (unsigned char)input[i];
+    }
+
+    // Print the original data in hex
+    printf("Original text (hex): ");
+    print_hex(input_data);
+
+    printf("Choose:\n1. Encrypt\n2. Decrypt\nEnter choice: ");
+    scanf("%d", &choice);
+    getchar(); // Consume the newline character left by scanf
+
+    if (choice == 1) {
+        encrypted_data = input_data;
+        xor_encrypt(&encrypted_data, key);
+        printf("Encrypted (hex): ");
+        print_hex(encrypted_data);
+    } else if (choice == 2) {
+        encrypted_data = input_data;
+        xor_encrypt(&encrypted_data, key);  // "Decrypt" by applying the same XOR operation
+        printf("Decrypted text: ");
+        for (int i = 7; i >= 0; i--) {
+            printf("%c", (char)((encrypted_data >> (i * 8)) & 0xFF));
+        }
+        printf("\n");
+    } else {
+        printf("Invalid choice.\n");
+    }
+
+    return 0;
+}
