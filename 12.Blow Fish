@@ -1,0 +1,31 @@
+def f(x): return ((x * 13) ^ (x >> 3)) & 0xFFFFFFFF
+def gen_keys(k): return [(sum(map(ord, k)) + i * 1234567) & 0xFFFFFFFF for i in range(18)]
+
+def feistel(L, R, keys, enc=True):
+    rng = range(16) if enc else range(17, 1, -1)
+    for i in rng:
+        L ^= keys[i]
+        R ^= f(L)
+        L, R = R, L
+    L, R = R, L
+    R ^= keys[16] if enc else keys[1]
+    L ^= keys[17] if enc else keys[0]
+    return L, R
+
+mode = input("Encrypt or Decrypt? ").strip().lower()
+key = input("Key: "); keys = gen_keys(key)
+
+if mode == 'encrypt':
+    msg = input("Message (8 chars max): ").ljust(8).encode()
+    L, R = int.from_bytes(msg[:4], 'big'), int.from_bytes(msg[4:], 'big')
+    L, R = feistel(L, R, keys)
+    print("Encrypted:", hex(L), hex(R))
+
+elif mode == 'decrypt':
+    L = int(input("Left hex: "), 16)
+    R = int(input("Right hex: "), 16)
+    L, R = feistel(L, R, keys, enc=False)
+    print("Decrypted:", (L.to_bytes(4, 'big') + R.to_bytes(4, 'big')).decode().strip())
+
+else:
+    print("Invalid option.")
