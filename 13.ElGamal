@@ -1,0 +1,53 @@
+import random
+
+def modinv(a, p):
+    return pow(a, -1, p)
+
+def generate_keys(p, g):
+    x = random.randint(2, p - 2)
+    y = pow(g, x, p)
+    return (p, g, y), x
+
+def encrypt(public_key, m):
+    p, g, y = public_key
+    k = random.randint(2, p - 2)
+    a = pow(g, k, p)
+    b = (m * pow(y, k, p)) % p
+    return a, b
+
+def decrypt(private_key, public_key, a, b):
+    p, _, _ = public_key
+    s = pow(a, private_key, p)
+    return (b * modinv(s, p)) % p
+
+def main():
+    print("1. Encrypt\n2. Decrypt")
+    choice = input("Choose (1 or 2): ").strip()
+
+    if choice == '1':
+        p = int(input("Enter prime p: "))
+        g = int(input("Enter primitive root g: "))
+        m = int(input(f"Enter message < {p}: "))
+        if m >= p or m < 0:
+            print("Invalid message.")
+            return
+        pub, priv = generate_keys(p, g)
+        a, b = encrypt(pub, m)
+        print("Public Key:", pub)
+        print("Private Key:", priv)
+        print("Encrypted (a, b):", a, b)
+    elif choice == '2':
+        p = int(input("Enter prime p: "))
+        g = int(input("Enter g: "))
+        y = int(input("Enter y: "))
+        x = int(input("Enter private key x: "))
+        a = int(input("Enter a: "))
+        b = int(input("Enter b: "))
+        pub = (p, g, y)
+        decrypted = decrypt(x, pub, a, b)
+        print("Decrypted Message:", decrypted)
+    else:
+        print("Invalid choice.")
+
+if __name__ == "__main__":
+    main()
