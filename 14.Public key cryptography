@@ -1,0 +1,54 @@
+import random
+
+# Function to compute greatest common divisor (GCD)
+def gcd(a, b):
+    while b: a, b = b, a % b
+    return a
+
+# Function to find modular inverse (Extended Euclidean Algorithm)
+def mod_inverse(e, phi):
+    for d in range(1, phi):
+        if (e * d) % phi == 1:
+            return d
+
+# Function to check prime
+def is_prime(n):
+    return all(n % i for i in range(2, int(n**0.5) + 1))
+
+# Function to generate a prime number
+def gen_prime():
+    while True:
+        p = random.randint(100, 200)
+        if is_prime(p): return p
+
+# Generate key pair
+p, q = gen_prime(), gen_prime()
+n, phi = p * q, (p-1) * (q-1)
+
+# Select public key exponent e
+e = random.choice([i for i in range(2, phi) if gcd(i, phi) == 1])
+d = mod_inverse(e, phi)
+
+public_key, private_key = (e, n), (d, n)
+
+# Encryption and Decryption functions
+def encrypt(msg, key):
+    return [(ord(c) ** key[0]) % key[1] for c in msg]
+
+def decrypt(cipher, key):
+    return ''.join([chr((c ** key[0]) % key[1]) for c in cipher])
+
+# User input for encrypt or decrypt
+choice = input("Enter 'E' for encryption or 'D' for decryption: ").strip().upper()
+
+if choice == "E":
+    message = input("Enter the message to encrypt: ")
+    ciphertext = encrypt(message, public_key)
+    print("Encrypted:", ciphertext)
+elif choice == "D":
+    cipher_input = input("Enter the numbers to decrypt (comma-separated): ")
+    ciphertext = list(map(int, cipher_input.split(",")))
+    decrypted_text = decrypt(ciphertext, private_key)
+    print("Decrypted:", decrypted_text)
+else:
+    print("Invalid choice! Please enter 'E' or 'D'.")
