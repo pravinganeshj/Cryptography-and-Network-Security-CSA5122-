@@ -1,0 +1,18 @@
+import hashlib
+
+def hmac_sha256(key, msg):
+    block_size = 64
+    key = key.encode()
+    msg = msg.encode()
+    if len(key) > block_size:
+        key = hashlib.sha256(key).digest()
+    key += b'\x00' * (block_size - len(key))
+    o_pad = bytes([b ^ 0x5c for b in key])
+    i_pad = bytes([b ^ 0x36 for b in key])
+    return hashlib.sha256(o_pad + hashlib.sha256(i_pad + msg).digest()).hexdigest()
+
+# Usage
+key = input("Enter secret key: ")
+msg = input("Enter message: ")
+mac = hmac_sha256(key, msg)
+print("\nHMAC:", mac)
