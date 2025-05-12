@@ -1,0 +1,57 @@
+import struct
+
+P, Q, ROUNDS = 0xB7E15163, 0x9E3779B9, 12
+
+def rol(x, y): return ((x << y) | (x >> (32 - y))) & 0xFFFFFFFF
+def ror(x, y): return ((x >> y) | (x << (32 - y))) & 0xFFFFFFFF
+
+def expand_key(key):
+    L = [0] * ((len(key)+3)//4)
+    for i in range(len(key)):
+        L[i//4] |= key[i] << (8*(i%4))
+    S = [(P + i*Q) & 0xFFFFFFFF for i in range(2*ROUNDS+2)]
+    A = B = i = j = 0
+    for _ in range(3*max(len(S), len(L))):
+        A = S[i] = rol((S[i]+A+B)&0xFFFFFFFF, 3)
+        B = L[j] = rol((L[j]+A+B)&0xFFFFFFFF, (A+B)&31)
+        i = (i+1)%len(S)
+        j = (j+1)%len(L)
+    return S
+
+def encrypt_block(b, S):
+    A, B = struct.unpack('<2I', b)
+    A = (A + S[0]) & 0xFFFFFFFF
+    B = (B + S[1]) & 0xFFFFFFFF
+    for i in range(1, ROUNDS+1):
+        A = (rol(A ^ B, B & 31) + S[2*i]) & 0xFFFFFFFF
+        B = (rol(B ^ A, A & 31) + S[2*i+1]) & 0xFFFFFFFF
+    return struct.pack('<2I', A, B)
+
+def decrypt_block(b, S):
+    A, B = struct.unpack('<2I', b)
+    for i in range(ROUNDS, 0, -1):
+        B = ror((B - S[2*i+1]) & 0xFFFFFFFF, A & 31) ^ A
+        A = ror((A - S[2*i]) & 0xFFFFFFFF, B & 31) ^ B
+    A = (A - S[0]) & 0xFFFFFFFF
+    B = (B - S[1]) & 0xFFFFFFFF
+    return struct.pack('<2I', A, B)
+
+def pad(data): l = 8 - len(data)%8; return data + bytes([l]*l)
+def unpad(data): return data[:-data[-1]]
+
+mode = input("Encrypt or Decrypt? (e/d): ").strip().lower()
+key = input("Enter key: ").encode()
+S = expand_key(key)
+
+if mode == 'e':
+    pt = pad(input("Enter plaintext: ").encode())
+    ct = b''.join(encrypt_block(pt[i:i+8], S) for i in range(0, len(pt), 8))
+    print("Ciphertext (hex):", ct.hex())
+
+elif mode == 'd':
+    ct = bytes.fromhex(input("Enter ciphertext (hex): "))
+    pt = b''.join(decrypt_block(ct[i:i+8], S) for i in range(0, len(ct), 8))
+    print("Decrypted text:", unpad(pt).decode(errors='ignore'))
+
+else:
+    print("Invalid mode. Use 'e' or 'd'.")
